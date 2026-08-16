@@ -1,0 +1,57 @@
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Soenneker.Dtos.HttpClientOptions;
+using Soenneker.Extensions.Configuration;
+using Soenneker.Docker.Registry.HttpClients.Abstract;
+using Soenneker.Utils.HttpClientCache.Abstract;
+
+namespace Soenneker.Docker.Registry.HttpClients;
+
+///<inheritdoc cref="IDockerRegistryOpenApiHttpClient"/>
+public sealed class DockerRegistryOpenApiHttpClient : IDockerRegistryOpenApiHttpClient
+{
+    private readonly IHttpClientCache _httpClientCache;
+    private readonly IConfiguration _config;
+
+    private const string _prodBaseUrl = "https://registry-1.docker.io";
+
+    public DockerRegistryOpenApiHttpClient(IHttpClientCache httpClientCache, IConfiguration config)
+    {
+        _httpClientCache = httpClientCache;
+        _config = config;
+    }
+
+    public ValueTask<HttpClient> Get(CancellationToken cancellationToken = default)
+    {
+        return _httpClientCache.Get(nameof(DockerRegistryOpenApiHttpClient), (config: _config, baseUrl: _config["Registry:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
+        {
+            var apiKey = state.config.GetValueStrict<string>("DockerRegistry:AccessToken");
+            string authHeaderName = state.config["Registry:AuthHeaderName"] ?? "Authorization";
+            string authHeaderValueTemplate = state.config["Registry:AuthHeaderValueTemplate"] ?? "Bearer {token}";
+            string authHeaderValue = authHeaderValueTemplate.Replace("{token}", apiKey, StringComparison.Ordinal);
+
+            return new HttpClientOptions
+            {
+                BaseAddress = new Uri(state.baseUrl),
+                DefaultRequestHeaders = new Dictionary<string, string>
+                {
+                    {authHeaderName, authHeaderValue},
+                }
+            };
+        }, cancellationToken);
+    }
+
+    public void Dispose()
+    {
+        _httpClientCache.RemoveSync(nameof(DockerRegistryOpenApiHttpClient));
+    }
+
+    public ValueTask DisposeAsync()
+    {
+        return _httpClientCache.Remove(nameof(DockerRegistryOpenApiHttpClient));
+    }
+}
