@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 namespace Soenneker.Docker.Registry.HttpClients.Abstract;
 /// <summary>
-/// A .NET thread-safe singleton HttpClient for 
+/// Provides a cached, authenticated HTTP client for the Docker Registry API.
 /// </summary>
 public interface IDockerRegistryOpenApiHttpClient: IDisposable, IAsyncDisposable
 {
