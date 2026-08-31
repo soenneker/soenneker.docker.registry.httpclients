@@ -15,6 +15,7 @@ public sealed class DockerRegistryOpenApiHttpClient : IDockerRegistryOpenApiHttp
 {
     private readonly IHttpClientCache _httpClientCache;
     private readonly IConfiguration _config;
+    private readonly string _cacheKey = $"{nameof(DockerRegistryOpenApiHttpClient)}:{Guid.NewGuid():N}";
 
     private const string _prodBaseUrl = "https://registry-1.docker.io";
 
@@ -26,7 +27,7 @@ public sealed class DockerRegistryOpenApiHttpClient : IDockerRegistryOpenApiHttp
 
     public ValueTask<HttpClient> Get(CancellationToken cancellationToken = default)
     {
-        return _httpClientCache.Get(nameof(DockerRegistryOpenApiHttpClient), (config: _config, baseUrl: _config["Registry:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
+        return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Registry:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
             var apiKey = state.config.GetValueStrict<string>("DockerRegistry:AccessToken");
             string authHeaderName = state.config["Registry:AuthHeaderName"] ?? "Authorization";
@@ -46,11 +47,11 @@ public sealed class DockerRegistryOpenApiHttpClient : IDockerRegistryOpenApiHttp
 
     public void Dispose()
     {
-        _httpClientCache.RemoveSync(nameof(DockerRegistryOpenApiHttpClient));
+        _httpClientCache.RemoveSync(_cacheKey);
     }
 
     public ValueTask DisposeAsync()
     {
-        return _httpClientCache.Remove(nameof(DockerRegistryOpenApiHttpClient));
+        return _httpClientCache.Remove(_cacheKey);
     }
 }

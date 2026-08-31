@@ -59,6 +59,6 @@ public sealed class RegistryProbe(IDockerRegistryOpenApiHttpClient clientProvide
 
 `Get` returns the cached client. Do not dispose the returned `HttpClient`; the registered provider owns the cache entry.
 
-Singleton registration is the normal choice for direct transport use. `AddDockerRegistryOpenApiHttpClientAsScoped()` scopes the provider but still uses the shared singleton HTTP-client cache; disposing that provider removes its named cache entry.
+Singleton registration is the normal choice for direct transport use. `AddDockerRegistryOpenApiHttpClientAsScoped()` creates a separately owned cache entry for each scope, so disposing one provider cannot remove another provider's client.
 
 This package applies a preconfigured header only. It does not parse `WWW-Authenticate` challenges, exchange Docker credentials for repository-scoped registry tokens, refresh expired tokens, deserialize responses, or translate non-success status codes. Obtain an appropriate registry token before use, or use a higher-level authentication flow around this transport.

@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <PropertyGroup>
-        <Description>A thread-safe singleton HttpClient for Registry's OpenAPI integration.</Description>
+        <Description>Provides a cached, authenticated HttpClient for the Docker Registry API.</Description>
         <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Docker.Registry.HttpClients</AssemblyName>
