@@ -30,7 +30,7 @@ public sealed class DockerRegistryOpenApiHttpClient : IDockerRegistryOpenApiHttp
     {
         return _httpClientCache.Get(_cacheKey, (config: _config, baseUrl: _config["Registry:ClientBaseUrl"] ?? _prodBaseUrl), static state =>
         {
-            var apiKey = state.config.GetValueStrict<string>("DockerRegistry:AccessToken");
+            var apiKey = state.config.GetStringStrict("DockerRegistry:AccessToken");
             string authHeaderName = state.config["Registry:AuthHeaderName"] ?? "Authorization";
             string authHeaderValueTemplate = state.config["Registry:AuthHeaderValueTemplate"] ?? "Bearer {token}";
             string authHeaderValue = authHeaderValueTemplate.Replace("{token}", apiKey, StringComparison.Ordinal);
